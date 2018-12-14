@@ -13,6 +13,13 @@
 
 namespace nmos
 {
+    struct event_tally 
+    {
+        web::json::value data_state;
+        web::json::value data_type;
+        event_tally() {}        
+    };
+
     // Resources have an API version, resource type and representation as json data
     // Everything else is (internal) registry information: their id, references to their sub-resources, creation and update timestamps,
     // and health which is usually propagated from a node, because only nodes get heartbeats and keep all their sub-resources alive
@@ -44,6 +51,9 @@ namespace nmos
         web::json::value data;
         // when the resource data is null, the resource has been deleted or expired
         bool has_data() const { return !data.is_null(); }
+
+        // IS07 
+        nmos::event_tally event;
 
         // universally unique identifier for the resource
         // see nmos/id.h

@@ -101,7 +101,7 @@ namespace nmos
         // or to a resource that prevented the insertion, and a bool denoting whether the insertion took place
         std::pair<resources::iterator, bool> insert_node_resources(nmos::resources& node_resources, const nmos::settings& settings);
 
-        void insert_event_tally(nmos::resources& node_resources, nmos::resources& event_tally_resources, nmos::resources& connection_resources, const nmos::id& device_id, const nmos::settings& settings);
+        void insert_event_tally(nmos::resources& node_resources,  const nmos::id& device_id, const nmos::settings& settings);
     }
 }
 

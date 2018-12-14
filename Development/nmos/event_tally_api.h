@@ -8,12 +8,13 @@
 // This is an experimental extension to expose configuration event-tally via a REST API
 namespace nmos
 {
-    struct node_model;
+    struct model;
+    struct event_tally_model;
 
     namespace experimental
     {
 
-        web::http::experimental::listener::api_router make_event_tally_api(nmos::node_model& model, slog::base_gate& gate);
+        web::http::experimental::listener::api_router make_event_tally_api(nmos::model& model, slog::base_gate& gate);
 
     }
 

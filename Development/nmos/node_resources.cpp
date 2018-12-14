@@ -454,21 +454,6 @@ namespace nmos
                 { nmos::fields::multicast_ip, value::null() }
             });
         }
-
-        // See https://github.com/AMWA-TV/nmos-event-tally/blob/v1.0-dev/docs/5.2.%20Transport%20-%20Websocket.md
-        // and ???
-        web::json::value make_connection_receiver_staged_is07_core_parameter_set(const nmos::id & source_id)
-        {
-            using web::json::value;
-            using web::json::value_of;
-
-            return value_of({
-                { nmos::fields::connection_uri, value::null() },
-                { nmos::fields::ext_is_07_source_id, source_id },
-                { nmos::fields::ext_is_07_rest_api_url, value::null() }
-            });
-        }
-
     }
 
     nmos::resource make_connection_sender(const nmos::id& id, bool smpte2022_7)
@@ -572,69 +557,45 @@ namespace nmos
         return resource;
     }
 
-
-    nmos::resource add_event_tally_connection(const nmos::id& source_id, const nmos::id& sender_id, const utility::string_t & type, const web::json::value & payload, const nmos::settings& settings) 
+    int add_event_tally(nmos::resources & resources, const nmos::id& source_id, const nmos::id& flow_id, utility::string_t type, web::json::value payload, const nmos::settings& settings)
     {
-        using web::json::value;
-      
-        auto data = details::make_connection_resource_core(sender_id, false);
-      
-        data[nmos::fields::endpoint_staged][nmos::fields::sender_id] = value::null();
-        data[nmos::fields::endpoint_staged][nmos::fields::transport_params] =  details::legs_of(details::make_connection_receiver_staged_is07_core_parameter_set(source_id), false);
-      
-        data[nmos::fields::endpoint_active] = data[nmos::fields::endpoint_staged];
-        // All instances of "auto" should be resolved into the actual values that will be used
-        // but in some cases the behaviour is more complex, and may be determined by the vendor.
-        // This function does not select a value for e.g. sender "source_ip" or receiver "interface_ip".
-        nmos::resolve_auto(types::receiver, data[nmos::fields::endpoint_active][nmos::fields::transport_params]);
-      
-        return{ is05_versions::v1_0, types::receiver, data, false };          
-    }
-
-    nmos::resource add_event_tally(const nmos::id& source_id, const nmos::id& device_id, const nmos::id& flow_id, utility::string_t type, web::json::value payload, const nmos::settings& settings)
-    {
-        using web::json::value;
-      
-        value data;            
-        data[U("id")] = value::string(source_id);
-        data[U("version")] = value::string(nmos::make_version());
-      
-        std::vector<std::pair<utility::string_t, web::json::value>> obj;
-        obj.push_back({"source_id", value::string(source_id)});
-        obj.push_back({"flow_id",   value::string(flow_id)});
-        data[U("identity")]   = web::json::value::object(obj);
-        data[U("timing")]     = value::object({{"creation_timestamp", value::string(make_version(nmos::tai_now()))}});
-        data[U("event_type")] = value::string(type);
-        data[U("payload")]    = value::object({{"value", payload}});
-        data[U("type")]        = value::string(type);
-      
-        return{ is04_versions::v1_2, types::event_tally, data, false };
+        resources::iterator resource = nmos::find_resource(resources, {source_id, nmos::types::source});
+        if ( resource != resources.end() ) {
+            nmos::event_tally event;
+            using web::json::value;
+            value & data_state = event.data_state, & data_type = event.data_type;
+            std::vector<std::pair<utility::string_t, web::json::value>> obj;
+            obj.push_back({"source_id", value::string(source_id)});
+            obj.push_back({"flow_id",   value::string(flow_id)});
+            data_state[U("identity")]   = web::json::value::object(obj);
+            data_state[U("timing")]     = value::object({{"creation_timestamp", value::string(make_version(nmos::tai_now()))}});
+            data_state[U("event_type")] = value::string(type);
+            data_state[U("payload")]    = value::object({{"value", payload}});
+            data_type[U("type")]        = value::string(type);
+            modify_resource(resources, source_id, [&event](nmos::resource& resource) 
+            {
+                resource.event = std::move(event);
+            });
+            return 1;
+        }
+        return 0;
     }
 
     namespace experimental
     {
-        void insert_event_tally(nmos::resources& node_resources, nmos::resources& event_tally_resources, nmos::resources& connection_resources, const nmos::id& device_id, const nmos::settings& settings) {
+        void insert_event_tally(nmos::resources& node_resources,  const nmos::id& device_id, const nmos::settings& settings) {
             const auto& seed_id = nmos::experimental::fields::seed_id(settings);
-#if 1
-            static int i;
-            auto source_id =  utility::string_t("dead5eef-1111-3333-8888-dead5eef888"+std::to_string(i)); 
-            auto flow_id =  utility::string_t("dead5eef-1111-3333-9999-dead5eef999"+std::to_string(i++)); 
-            auto sender_id =  utility::string_t("dead5eef-1111-4444-8888-dead5eef888"+std::to_string(i)); 
-            auto receiver_id =  utility::string_t("dead5eef-1111-4444-9999-dead5eef999"+std::to_string(i++)); 
-#else
             auto source_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/source/event_tally/0"));
             auto flow_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/flow/event_tally/0"));
             auto sender_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/sender/event_tally/0"));
             auto receiver_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/receiver/event_tally/0"));
-#endif
             
             insert_resource(node_resources, make_type_event_source(source_id, device_id, "boolean", settings));
             insert_resource(node_resources, make_data_flow(flow_id, source_id, device_id, settings));
             insert_resource(node_resources, make_sender(sender_id, flow_id, nmos::transports::mqtt, device_id, "", {}, settings));
             insert_resource(node_resources, make_receiver(receiver_id, device_id, nmos::transports::mqtt, {}, settings));
 
-            insert_resource(event_tally_resources, add_event_tally(source_id, flow_id, device_id, "boolean", {}, settings));
-            insert_resource(connection_resources, add_event_tally_connection(source_id, sender_id, "boolean", {}, settings));
+            add_event_tally(node_resources, source_id, flow_id, "boolean", {}, settings);
         }
 
         // insert a node resource, and sub-resources, according to the settings; return an iterator to the inserted node resource,
