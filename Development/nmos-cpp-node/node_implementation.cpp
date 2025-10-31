@@ -203,6 +203,130 @@ namespace impl
         nmos::nc::counter late_packet_counter;
     };
     std::vector<nic_packet_counter> nic_packet_counters;
+
+    // Example of an audio sender control class  
+    static nmos::control_protocol_resource
+    make_sender_control(nmos::experimental::control_protocol_state & control_protocol_state,
+                        const web::json::value & sender_data,
+                        const nmos::nc_oid & oid,
+                        const nmos::nc_oid & parent_oid,
+                        const web::json::value touchpoint,
+                        slog::base_gate & gate) {
+        using web::json::value;
+        using web::json::value_of;
+
+        // Datatype description for an object within an object
+        auto make_object_object_datatype = [](const std::vector<std::tuple<utility::string_t,utility::string_t,utility::string_t>> & obj_desc,
+                                              const utility::string_t & descriptor, const utility::string_t & type_name) {
+            using web::json::value;
+            auto fields = value::array();
+            for ( auto obj : obj_desc ) {
+                auto data = nmos::nc::details::make_field_descriptor(std::get<0>(obj), std::get<1>(obj), std::get<2>(obj), true, false, value::null());
+                web::json::push_back(fields, std::move(data));
+            }
+            auto ret = nmos::nc::details::make_datatype_descriptor_struct(descriptor, type_name, fields, value::null());
+            return ret;
+        };
+
+        // Datatype description for an array within an object
+        auto make_object_array_datatype = [](const utility::string_t & obj_descriptor, const utility::string_t & obj_type_name,
+                                             const utility::string_t & descriptor, const utility::string_t & type_name) {
+            using web::json::value;
+            auto fields = value::array();
+            auto data = nmos::nc::details::make_field_descriptor(obj_descriptor, obj_type_name, U("NcString"), false, true, value::null());
+            web::json::push_back(fields, std::move(data));
+            auto ret = nmos::nc::details::make_datatype_descriptor_struct(descriptor, type_name, fields, value::null());
+            return ret;
+        };
+
+        std::vector<std::tuple<utility::string_t,utility::string_t,utility::string_t>> subs_array{
+            {U("active"), U("active"), U("NcBoolean")},
+            {U("receiver_id"), U("receiver_id"), U("NcUuid")}};
+        auto subs_data_type = make_object_object_datatype(subs_array, U("NcSenderObjectType"), U("NcSenderObjectType"));
+        control_protocol_state.insert(nmos::experimental::datatype_descriptor{ subs_data_type });
+
+        auto caps_data_type  = make_object_array_datatype(U("Media Type Array"), U("media_types"), U("NcSenderCapsType"), U("NcSenderCapsType"));
+        control_protocol_state.insert(nmos::experimental::datatype_descriptor{ caps_data_type });
+
+        auto tags_data_type  = make_object_array_datatype(U("Hints Type Array"), U("urn:x-nmos:tag:grouphint/v1.0"), U("NcSenderTagsType"), U("NcSenderTagsType"));
+        control_protocol_state.insert(nmos::experimental::datatype_descriptor{ tags_data_type });
+
+        auto array_data_type = nmos::nc::details::make_datatype_typedef(U("Array Type"), U("NcArray"), true, U("NcString"), value::null());
+        control_protocol_state.insert(nmos::experimental::datatype_descriptor{ array_data_type });
+
+        const web::json::field_as_value  caps_property{ U("caps") };
+        const web::json::field_as_string description_property{ U("description") };
+        const web::json::field_as_string device_id_property{ U("device_id") };
+        const web::json::field_as_string flow_id_property{ U("flow_id") };
+        const web::json::field_as_string uuid_property{ U("resource_id") };
+        const web::json::field_as_array  interface_bindings_property{ U("interface_bindings") };
+        const web::json::field_as_string label_property{ U("label") };
+        const web::json::field_as_string manifest_href_property{ U("manifest_href") };
+        const web::json::field_as_array  subscription_property{ U("subscription") };
+        const web::json::field_as_value  tags_property{ U("tags") };
+        const web::json::field_as_string transport_property{ U("transport") };
+        const web::json::field<nmos::tai> version_property{ U("version") };
+
+        // Define property descriptors: required fields
+        std::vector<web::json::value> snd_control_property_descriptors = {
+            nmos::experimental::make_control_class_property_descriptor(description_property, { 3, 1 }, description_property, U("NcString")),
+            nmos::experimental::make_control_class_property_descriptor(uuid_property, { 3, 2 }, uuid_property, U("NcUuid")),
+            nmos::experimental::make_control_class_property_descriptor(label_property, { 3, 3 }, label_property, U("NcString")),
+            nmos::experimental::make_control_class_property_descriptor(tags_property, { 3, 4 }, tags_property, U("NcSenderTagsType")),
+            nmos::experimental::make_control_class_property_descriptor(version_property, { 3, 5 }, version_property, U("NcVersionCode")),
+        };
+        // Property descriptor for optional fields
+        if (sender_data.has_field(caps_property)) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(caps_property,{ 3, 6 }, caps_property, U("NcSenderCapsType")));
+        if (sender_data.has_field(device_id_property)) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(device_id_property, { 3, 7 }, device_id_property, U("NcUuid")));
+        if (sender_data.has_field(flow_id_property)) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(flow_id_property, { 3, 8 }, flow_id_property, U("NcUuid")));
+        if (sender_data.has_field(interface_bindings_property)) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(interface_bindings_property, { 3, 9 }, interface_bindings_property, U("NcArray")));
+        if (sender_data.has_field(manifest_href_property)) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(manifest_href_property, { 3, 10 }, manifest_href_property, U("NcUri")));
+        if (sender_data.has_field(subscription_property)) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(subscription_property, { 3, 11 }, subscription_property, U("NcSenderObjectType")));
+        if (sender_data.has_field(transport_property)) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(transport_property, { 3, 12 }, transport_property, U("NcString")));
+
+        auto snd_class_id = nmos::nc::make_class_id(nmos::nc_worker_class_id, 0, { 4 });
+
+        // method and event descriptors are defined by defaults in the function prototype, so only need to pass the property descriptors
+        utility::string_t descriptor_description = sender_data.at(label_property).as_string()+ U(" control class descriptor");
+        auto sender_control_class_descriptor =
+            nmos::experimental::make_control_class_descriptor(descriptor_description, //U("Sender control class descriptor"),
+                                                              snd_class_id, U("SenderControl"),
+                                                              snd_control_property_descriptors /*,snd_control_method_descriptors*/);
+
+        // Insert class descriptor into the nmos-cpp framework
+        control_protocol_state.insert(std::move(sender_control_class_descriptor));
+
+        auto snd_name = U("audio-sender-control");
+        // define a function for instantiating object instances of the class
+        auto data = nmos::nc::details::make_worker(snd_class_id, oid,
+                                                   true,
+                                                   parent_oid,
+                                                   snd_name,
+                                                   web::json::value(snd_name),
+                                                   U("Sender resource data"),
+                                                   touchpoint,
+                                                   web::json::value::null(),
+                                                   true);
+
+        // Required
+        data[description_property] = sender_data.at(description_property);
+        data[uuid_property]        = sender_data.at(U("id"));
+        data[label_property]       = sender_data.at(label_property);
+        data[tags_property]        = sender_data.at(tags_property);
+        data[version_property]     = sender_data.at(version_property);
+        // Optional
+        if (sender_data.has_field(caps_property))               data[caps_property]               = sender_data.at(caps_property);
+        if (sender_data.has_field(device_id_property))          data[device_id_property]          = sender_data.at(device_id_property);
+        if (sender_data.has_field(flow_id_property))            data[flow_id_property]            = sender_data.at(flow_id_property);
+        if (sender_data.has_field(interface_bindings_property)) data[interface_bindings_property] = sender_data.at(interface_bindings_property);
+        if (sender_data.has_field(manifest_href_property))      data[manifest_href_property]      = sender_data.at(manifest_href_property);
+        if (sender_data.has_field(subscription_property))       data[subscription_property]       = sender_data.at(subscription_property);
+        if (sender_data.has_field(transport_property))          data[transport_property]          = sender_data.at(transport_property);
+
+        auto snd_control_resource = nmos::control_protocol_resource{ nmos::is12_versions::v1_0, nmos::types::nc_worker, std::move(data), true };
+        return snd_control_resource;
+    }
+
 }
 
 // forward declarations for node_implementation_thread
@@ -397,6 +521,7 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
         if (!insert_resource_after(delay_millis, model.node_resources, std::move(device), gate)) throw node_implementation_init_exception();
     }
 
+    web::json::value audio_sender_for_control_protocol;
     // example sources, flows and senders
     for (int index = 0; index < how_many; ++index)
     {
@@ -505,6 +630,9 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
                 const auto transport_bit_rate = uint64_t(transport_bit_rate_factor * format_bit_rate / 1e3 + 0.5) * 1000;
                 sender.data[nmos::fields::bit_rate] = value(transport_bit_rate);
                 sender.data[nmos::fields::st2110_21_sender_type] = value(nmos::st2110_21_sender_types::type_N.name);
+            }
+            else if (impl::ports::audio == port) {
+                audio_sender_for_control_protocol = sender.data;
             }
             impl::set_label_description(sender, port, index);
             impl::insert_group_hint(sender, port, index);
@@ -1325,6 +1453,13 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
 
         // example temperature-sensor
         const auto temperature_sensor = make_temperature_sensor(++oid, nmos::root_block_oid, U("temperature-sensor"), U("Temperature Sensor"), U("Temperature Sensor block"), value::null(), value::null(), 0.0, U("Celsius"));
+
+        // exmaple sender
+        nmos::nc::push_back(root_block, impl::make_sender_control(control_protocol_state,
+                                                                  audio_sender_for_control_protocol,
+                                                                  ++oid, nmos::root_block_oid,
+                                                                  value_of({ { nmos::nc::details::make_touchpoint_nmos({nmos::ncp_touchpoint_resource_types::sender, audio_sender_for_control_protocol.at(U("id")).as_string()}) } }),
+                                                                  gate));
 
         // add receivers-block to root-block
         nmos::nc::push_back(root_block, receivers_block);
