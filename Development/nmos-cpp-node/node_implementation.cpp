@@ -1488,13 +1488,6 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
         // example temperature-sensor
         const auto temperature_sensor = make_temperature_sensor(++oid, nmos::root_block_oid, U("temperature-sensor"), U("Temperature Sensor"), U("Temperature Sensor block"), value::null(), value::null(), 0.0, U("Celsius"));
 
-        // exmaple sender
-        nmos::nc::push_back(root_block, impl::make_sender_control(control_protocol_state,
-                                                                  audio_sender_for_control_protocol,
-                                                                  ++oid, nmos::root_block_oid,
-                                                                  value_of({ { nmos::nc::details::make_touchpoint_nmos({nmos::ncp_touchpoint_resource_types::sender, audio_sender_for_control_protocol.at(U("id")).as_string()}) } }),
-                                                                  gate));
-
         // add receivers-block to root-block
         nmos::nc::push_back(root_block, receivers_block);
         // add temperature-sensor to root-block
