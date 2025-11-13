@@ -273,13 +273,13 @@ namespace impl
             nmos::experimental::make_control_class_property_descriptor(U("version"), { 3, 5 }, version_property, U("NcVersionCode")),
         };
         // Property descriptor for optional fields
-        if (sender_data.has_field(U("caps"))) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("caps"),{ 3, 6 }, caps_property, U("NcSenderCapsType")));
-        if (sender_data.has_field(U("device_id"))) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("description"), { 3, 7 }, device_id_property, U("NcUuid")));
-        if (sender_data.has_field(U("flow_id"))) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("flow_id"), { 3, 8 }, flow_id_property, U("NcUuid")));
-        if (sender_data.has_field(U("interface_bindings"))) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("interface_bindings"), { 3, 9 }, interface_bindings_property, U("NcArray")));
-        if (sender_data.has_field(U("manifest_href"))) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("manifest_href"), { 3, 10 }, manifest_href_property, U("NcUri")));
-        if (sender_data.has_field(U("subscription"))) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("subscription"), { 3, 11 }, subscription_property, U("NcSenderObjectType")));
-        if (sender_data.has_field(U("transport"))) snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("transport"), { 3, 12 }, transport_property, U("NcString")));
+     snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("caps"), { 3, 6 }, caps_property, U("SenderCapsType"), true, true, false, false, web::json::value::null()));
+     snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("description"), { 3, 7 }, device_id_property, U("NcUuid"), true, true, false, false, web::json::value::null()));
+     snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("flow_id"), { 3, 8 }, flow_id_property, U("NcUuid"), true, true, false, false, web::json::value::null()));
+     snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("interface_bindings"), { 3, 9 }, interface_bindings_property, U("Array")));
+  snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("manifest_href"), { 3, 10 }, manifest_href_property, U("NcUri"), true, true, false, false, web::json::value::null()));
+ snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("subscription"), { 3, 11 }, subscription_property, U("SenderObjectType"), true, true, false, false, web::json::value::null()));
+  snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("transport"), { 3, 12 }, transport_property, U("NcString"), true, true, false, false, web::json::value::null()));
 
         auto snd_class_id = nmos::nc::make_class_id(nmos::nc_worker_class_id, 0, { 5 });
 
