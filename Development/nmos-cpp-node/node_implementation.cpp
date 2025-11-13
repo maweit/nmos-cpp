@@ -239,7 +239,7 @@ namespace impl
             {U("active"), U("active"), U("NcBoolean")},
             {U("receiver_id"), U("receiver_id"), U("NcUuid")}
         };
-        auto subs_data_type = make_object_object_datatype(subs_array, U("NcSenderObjectType"), U("NcSenderObjectType"));
+        auto subs_data_type = make_object_object_datatype(subs_array, U("SenderObjectType"), U("SenderObjectType"));
         control_protocol_state.insert(std::move(nmos::experimental::datatype_descriptor{ subs_data_type }));
 
         auto caps_data_type  = make_object_array_datatype(U("Media Type Array"), U("media_types"), U("NcSenderCapsType"), U("NcSenderCapsType"));
