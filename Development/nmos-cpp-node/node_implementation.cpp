@@ -242,7 +242,7 @@ namespace impl
         auto subs_data_type = make_object_object_datatype(subs_array, U("SenderObjectType"), U("SenderObjectType"));
         control_protocol_state.insert(std::move(nmos::experimental::datatype_descriptor{ subs_data_type }));
 
-        auto caps_data_type  = make_object_array_datatype(U("Media Type Array"), U("media_types"), U("NcSenderCapsType"), U("NcSenderCapsType"));
+        auto caps_data_type  = make_object_array_datatype(U("Media Type Array"), U("media_types"), U("SenderCapsType"), U("SenderCapsType"));
         control_protocol_state.insert(std::move(nmos::experimental::datatype_descriptor{ caps_data_type }));
 
         auto tags_data_type  = make_object_array_datatype(U("Hints Type Array"), U("urn:x-nmos:tag:grouphint/v1.0"), U("NcSenderTagsType"), U("NcSenderTagsType"));
