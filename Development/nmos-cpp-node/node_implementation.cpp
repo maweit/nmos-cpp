@@ -269,7 +269,7 @@ namespace impl
             nmos::experimental::make_control_class_property_descriptor(U("description"), { 3, 1 }, description_property, U("NcString")),
             nmos::experimental::make_control_class_property_descriptor(U("resource_id"), { 3, 2 }, uuid_property, U("NcUuid")),
             nmos::experimental::make_control_class_property_descriptor(U("label"), { 3, 3 }, label_property, U("NcString")),
-            nmos::experimental::make_control_class_property_descriptor(U("tags"), { 3, 4 }, tags_property, U("NcSenderTagsType")),
+            nmos::experimental::make_control_class_property_descriptor(U("tags"), { 3, 4 }, tags_property, U("SenderTagsType")),
             nmos::experimental::make_control_class_property_descriptor(U("version"), { 3, 5 }, version_property, U("NcVersionCode")),
         };
         // Property descriptor for optional fields
