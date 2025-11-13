@@ -339,13 +339,13 @@ namespace impl
         data[tags_property]        = sender_data.at(U("tags"));
         data[version_property]     = sender_data.at(U("version"));
         // Optional
-        if (sender_data.has_field(U("caps")))               data[caps_property]               = sender_data.at(U("caps"));
-        if (sender_data.has_field(U("device_id")))          data[device_id_property]          = sender_data.at(U("device_id"));
-        if (sender_data.has_field(U("flow_id")))            data[flow_id_property]            = sender_data.at(U("flow_id"));
-        if (sender_data.has_field(U("interface_bindings"))) data[interface_bindings_property] = sender_data.at(U("interface_bindings"));
-        if (sender_data.has_field(U("manifest_href")))      data[manifest_href_property]      = sender_data.at(U("manifest_href"));
-        if (sender_data.has_field(U("subscription")))       data[subscription_property]       = sender_data.at(U("subscription"));
-        if (sender_data.has_field(U("transport")))          data[transport_property]          = sender_data.at(U("transport"));
+        data[caps_property]               = sender_data.has_field(U("caps")) ? sender_data.at(U("caps")) : web::json::value::null();
+        data[device_id_property]          = sender_data.has_field(U("device_id")) ? sender_data.at(U("device_id")) : web::json::value::null();
+        data[flow_id_property]            = sender_data.has_field(U("flow_id")) ? sender_data.at(U("flow_id")) : web::json::value::null();
+        data[interface_bindings_property] = sender_data.has_field(U("interface_bindings")) ? sender_data.at(U("interface_bindings"))  : web::json::value::null();
+        data[manifest_href_property]      = sender_data.has_field(U("manifest_href")) ? sender_data.at(U("manifest_href")) : web::json::value::null();
+        data[subscription_property]       = sender_data.has_field(U("subscription")) ? sender_data.at(U("subscription")) : web::json::value::null();
+        data[transport_property]          = sender_data.has_field(U("transport")) ? sender_data.at(U("transport")) : web::json::value::null();
 
         auto snd_control_resource = nmos::control_protocol_resource{ nmos::is12_versions::v1_0, nmos::types::nc_worker, std::move(data), true };
         return snd_control_resource;
