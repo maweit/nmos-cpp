@@ -206,9 +206,9 @@ namespace impl
 
 
     // Example of audio sender control class descriptors. Used below for setting up a sender control class
-    nmos::nc_class_id
+    void
     make_audio_sender_descriptors(nmos::experimental::control_protocol_state & control_protocol_state,
-                                  const web::json::value & sender_data) {
+                                  const web::json::value & sender_data, nmos::nc_class_id snd_class_id) {
         using web::json::value;
         using web::json::value_of;
 
@@ -281,8 +281,6 @@ namespace impl
  snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("subscription"), { 3, 11 }, subscription_property, U("SenderObjectType"), true, true, false, false, web::json::value::null()));
   snd_control_property_descriptors.push_back(nmos::experimental::make_control_class_property_descriptor(U("transport"), { 3, 12 }, transport_property, U("NcString"), true, true, false, false, web::json::value::null()));
 
-        auto snd_class_id = nmos::nc::make_class_id(nmos::nc_worker_class_id, 0, { 5 });
-
         // method and event descriptors are defined by defaults in the function prototype, so only need to pass the property descriptors
         utility::string_t descriptor_description = utility::string_t(U("AudioSenderControl")) + utility::string_t(U(" control class descriptor"));
         auto sender_control_class_descriptor =
@@ -292,8 +290,6 @@ namespace impl
 
         // Insert class descriptor into the nmos-cpp framework
         control_protocol_state.insert(std::move(sender_control_class_descriptor));
-
-        return snd_class_id;
     }
 
     // Example of an audio sender control class  
@@ -1365,7 +1361,8 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
         };
 
         // audio sender control descriptors
-        auto audio_sender_class_id = impl::make_audio_sender_descriptors(control_protocol_state, audio_sender_for_control_protocol);
+        auto audio_sender_class_id = nmos::nc::make_class_id(nmos::nc_worker_class_id, 0, { 5 });
+        impl::make_audio_sender_descriptors(control_protocol_state, audio_sender_for_control_protocol);
 
         // example root block
         auto root_block = nmos::make_root_block();
