@@ -1362,7 +1362,7 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
 
         // audio sender control descriptors
         auto audio_sender_class_id = nmos::nc::make_class_id(nmos::nc_worker_class_id, 0, { 5 });
-        impl::make_audio_sender_descriptors(control_protocol_state, audio_sender_for_control_protocol);
+        impl::make_audio_sender_descriptors(control_protocol_state, audio_sender_for_control_protocol, audio_sender_class_id);
 
         // example root block
         auto root_block = nmos::make_root_block();
