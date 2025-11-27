@@ -216,7 +216,7 @@ namespace impl
             using web::json::value;
             auto fields = value::array();
             for ( auto obj : obj_desc ) {
-                auto data = nmos::nc::details::make_field_descriptor(std::get<0>(obj), std::get<1>(obj), std::get<2>(obj), true, false, value::null());
+                auto data = nmos::nc::details::make_field_descriptor(std::get<0>(obj), std::get<1>(obj), std::get<2>(obj), true, std::get<3>(obj), value::null());
                 web::json::push_back(fields, std::move(data));
             }
             auto ret = nmos::nc::details::make_datatype_descriptor_struct(descriptor, type_name, fields, value::null());
@@ -282,10 +282,11 @@ namespace impl
     }
 
     // Example of an sender control class
-    static nmos::control_protocol_resource make_sender_control(const nmos::nc_class_id & snd_class_id,
-                                                               const web::json::value & sender_data,
-                                                               const nmos::nc_oid & oid,
-                                                               const nmos::nc_oid & parent_oid,
+    static nmos::control_protocol_resource make_sender_control(const nmos::nc_class_id& snd_class_id,
+                                                               const web::json::value& sender_data,
+                                                               const nmos::nc_oid& oid,
+                                                               const utility::string_t& role,
+                                                               const nmos::nc_oid& parent_oid,
                                                                const web::json::value touchpoint,
                                                                slog::base_gate & gate)
     {
@@ -321,8 +322,8 @@ namespace impl
         auto data = nmos::nc::details::make_worker(snd_class_id, oid,
                                                    true,
                                                    parent_oid,
-                                                   snd_name,
-                                                   web::json::value(snd_name),
+                                                   role,
+                                                   web::json::value(role),
                                                    U("Sender resource data"),
                                                    touchpoint,
                                                    web::json::value::null(),
@@ -1497,7 +1498,8 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
                     const auto& sender = nmos::find_resource(model.node_resources, sender_id);
                     auto sender_control = impl::make_sender_control(sender_control_class_id,
                         sender->data,
-                        ++oid, nmos::root_block_oid,
+                        ++oid, role.str(),
+                        nmos::root_block_oid,
                         value_of({ { nmos::nc::details::make_touchpoint_nmos({nmos::ncp_touchpoint_resource_types::sender, sender_id}) } }),
                         gate);
                     // add receiver-monitor to receivers-block
