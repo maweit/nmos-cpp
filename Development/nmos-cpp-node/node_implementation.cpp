@@ -1469,7 +1469,7 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
                     utility::ostringstream_t role;
                     role << U("sender-monitor-") << ++count;
                     const auto& sender = nmos::find_resource(model.node_resources, sender_id);
-                    auto sender_monitor = nmos::make_sender_monitor(++oid, true, nmos::root_block_oid, role.str(), nmos::fields::label(sender->data), nmos::fields::description(sender->data), value_of({ { nmos::nc::details::make_touchpoint_nmos({nmos::ncp_touchpoint_resource_types::sender, sender_id}) } }));
+                    auto sender_monitor = nmos::make_sender_monitor(++oid, true, sender_monitors_block_oid, role.str(), nmos::fields::label(sender->data), nmos::fields::description(sender->data), value_of({ { nmos::nc::details::make_touchpoint_nmos({nmos::ncp_touchpoint_resource_types::sender, sender_id}) } }));
                     // optionally indicate dependencies within the device model
                     nmos::set_object_dependency_paths(sender_monitor, { {U("root"), U("sender-monitors")} });
                     // add sender-monitor to root-block
@@ -1499,7 +1499,7 @@ void node_implementation_init(nmos::node_model& model, nmos::experimental::contr
                     auto sender_control = impl::make_sender_control(sender_control_class_id,
                         sender->data,
                         ++oid, role.str(),
-                        nmos::root_block_oid,
+                        sender_controls_block_oid,
                         value_of({ { nmos::nc::details::make_touchpoint_nmos({nmos::ncp_touchpoint_resource_types::sender, sender_id}) } }),
                         gate);
                     // add receiver-monitor to receivers-block
